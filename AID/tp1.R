@@ -1,11 +1,13 @@
-setwd("C:/Users/OLX - Franco/Dropbox/Data Science/Maestria/AID/clase_AID1104")
+setwd("C:/Github/MScDataMiningUBA2015/AID")
 
 require(xlsx)
 require(tidyr)
 require(dplyr)
 require(ggplot2)
 
-recepcionistas<-read.xlsx("recepcionistas.xls",1)
+#FALTA: Escribir un nombre a ultimo campo, sino tira error.
+
+recepcionistas<-read.xlsx("recepcionistas.xlsx",1)
 
 df <- recepcionistas %>%
   rename(cord.juez1=cord.juez.1, cord.juez2=cord.juez.2) %>%
