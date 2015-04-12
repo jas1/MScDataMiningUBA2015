@@ -1,5 +1,4 @@
-
-
+#AID - Trabajo Práctico Nro. I
 
 Cargar librerías necesarias:
 
@@ -10,6 +9,8 @@ require(dplyr)
 require(ggplot2)
 require(knitr)
 ```
+
+##Ejercicio 1: Transformaciones de datos
 
 Trabajo previo sobre el file recepcionistas: Escribir un nombre a ultimo campo, sino tira error.
 
@@ -32,87 +33,115 @@ kable(df)
 ```
 
 
-1) Calcule el promedio por juez de cada una de las aspirantes
+###a) Calcule el promedio por juez de cada una de las aspirantes
 
 ```{r}
-ej1<- df %>%
+a<- df %>%
   group_by(candidatos,juez)%>%
   summarise(promedio=mean(puntaje))
-kable(ej1)
+kable(a)
 ```
 
-2) Calcule el promedio de cada una de las aspirantes tomando en cuenta todos los rubros y ambos jueces
+###b) Calcule el promedio de cada una de las aspirantes tomando en cuenta todos los rubros y ambos jueces
 
 ```{r}
-ej2<- df %>%
+b<- df %>%
   group_by(candidatos) %>%
   summarise(promedio=mean(puntaje))
-kable(ej2)
+kable(b)
 ```
 
 
-3) Transformar las puntuaciones observadas de modo tal que cada una seis variables tenga media 0 y dispersión 1.
+###c) Transformar las puntuaciones observadas de modo tal que cada una seis variables tenga media 0 y dispersión 1.
 
 Esto permite observar variación entre las candidatas dentro de un mismo atributo y un mismo juez.
 
 ```{r}
-ej3<- df %>%
+c<- df %>%
   group_by(juez,atributo) %>%
   mutate(est=(puntaje-mean(puntaje))/sd(puntaje)) %>%
   ungroup()
-kable(ej3)
+kable(c)
 ```
 
 
 
-4) Transformar las puntuaciones de modo tal que cada candidata tenga para cada juez media 0 y dispersión 1.
+###d) Transformar las puntuaciones de modo tal que cada candidata tenga para cada juez media 0 y dispersión 1.
 
 Esto permite observar la variación entre los atributos de una misma candidata y un mismo juez
 
 ```{r}
-ej4<-df %>%
+d<-df %>%
   group_by(juez,candidatos) %>%
   mutate(est=(puntaje-mean(puntaje))/sd(puntaje))%>%
   ungroup()
-kable(ej4)
+kable(d)
 ```
 
 
 
-5) Grafique los perfiles multivariados de cada una de las candidatas para ambas transformaciones.
+###e) Grafique los perfiles multivariados de cada una de las candidatas para ambas transformaciones.
+
+####1) Variación entre las candidatas dentro de un mismo juez y un mismo atributo. Probamos con dos visualizaciones, la primera permite comparar mejor las diferencias entre jueces, la segunda, permite ver el perfil de atributos de cada candidata.
+
 
 ```{r}
-ej5<-ggplot(ej3, aes(x=juez, y=est, group=candidatos, color=candidatos))+
+e1<-ggplot(c, aes(x=juez, y=est, group=candidatos, color=candidatos))+
   geom_point(size=5)+
   geom_line()+
   facet_grid(.~atributo)
 
-print(ej5)
+print(e1)
 ```
 
-
-En el atributo coordinación, ambos jueces establecen a Carla como la mejor y Alejandra como la más floja
-
-
 ```{r}
-ej5b<-ggplot(ej3, aes(x=atributo, y=est, group=candidatos, color=candidatos))+
+e2<-ggplot(c, aes(x=atributo, y=est, group=candidatos, color=candidatos))+
   geom_point(size=5)+
   geom_line()+
   facet_grid(.~juez)
 
-print(ej5b)
+print(e2)
 ```
 
+Conclusiones:
+
+Si intentamos hacer un ranking de candidatas para cada atributo:
+
+1) En el atributo coordinación, ambos jueces establecen a Carla como la mejor y Alejandra como la más floja. 
+
+2) En idiomas hay diferencias entre ambos jueces, ambos consideran a Mariana como la mejor, Daniela se mantiene en último lugar, con Sabrina desde cerca. 
+
+3) En presencia, Daniela está en el último lugar para ambos jueces, Maia y Carla en el primero.  
+
+Si hay alguna preferencia de los jueces por alguna candidata, podemos decir que el juez dos prefiere más a Alejandra que el juez 1. Mientras que el juez uno prefiere más a Mariana que el juez 2. 
+
+
+####2) Variación entre los atributos de una misma candidata y un mismo juez. La primera visualización permite ver las diferencias entre ambos jueces, la segunda permite ver cómo evaluló cada juez en general con respecto a cada atributo.
 
 
 ```{r}
-ej6<-ggplot(ej4, aes(x=juez, y=est, group=atributo, color=atributo))+
+e3<-ggplot(d, aes(x=juez, y=est, group=atributo, color=atributo))+
   geom_line()+
   geom_point(size=5)+
   facet_grid(.~candidatos)
 
-print(ej6)
+print(e3)
 ```
+
+
+```{r}
+e4<-ggplot(d, aes(x=candidatos, y=est, group=atributo, color=atributo))+
+  geom_line()+
+  geom_point(size=5)+
+  facet_grid(.~juez)
+
+print(e4)
+```
+
+En los únicos casos que se observa una disidencia notable entre ambos jueces en cuanto a las aptitudes de una misma candidata es en Alejandra y Mariana, el juez 2 en ambos casos ve mejor el idioma que el juez 1 pero peor la coordinación. Este patrón se replica en casi todos los casos.
+
+El juez 1 tiene a ser más exigente en idiomas que en coordinación, y el juez 2 suele puntuar mejor en presencia que en los otros atributos.
+
 
 
 
