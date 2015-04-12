@@ -1,0 +1,122 @@
+Setear directorio de trabajo:
+
+```{r}
+setwd("C:/Github/MScDataMiningUBA2015/AID")
+```
+
+
+Cargar librerías necesarias:
+
+```{r warning=FALSE, message=FALSE}
+require(xlsx)
+require(tidyr)
+require(dplyr)
+require(ggplot2)
+require(knitr)
+```
+
+Trabajo previo sobre el file recepcionistas: Escribir un nombre a ultimo campo, sino tira error.
+
+
+Leer datos:
+
+```{r}
+recepcionistas<-read.xlsx("recepcionistas.xlsx",1)
+```
+
+
+Disponer datos en manera ordenada:
+
+```{r}
+df <- recepcionistas %>%
+  rename(cord.juez1=cord.juez.1, cord.juez2=cord.juez.2) %>%
+  gather(atributo, puntaje, -candidatos) %>%
+  separate(atributo, into = c("atributo", "juez"), sep = "\\.")
+kable(df)
+```
+
+
+1) Calcule el promedio por juez de cada una de las aspirantes
+
+```{r}
+ej1<- df %>%
+  group_by(candidatos,juez)%>%
+  summarise(promedio=mean(puntaje))
+kable(ej1)
+```
+
+2) Calcule el promedio de cada una de las aspirantes tomando en cuenta todos los rubros y ambos jueces
+
+```{r}
+ej2<- df %>%
+  group_by(candidatos) %>%
+  summarise(promedio=mean(puntaje))
+kable(ej2)
+```
+
+
+3) Transformar las puntuaciones observadas de modo tal que cada una seis variables tenga media 0 y dispersión 1.
+
+Esto permite observar variación entre las candidatas dentro de un mismo atributo y un mismo juez.
+
+```{r}
+ej3<- df %>%
+  group_by(juez,atributo) %>%
+  mutate(est=(puntaje-mean(puntaje))/sd(puntaje)) %>%
+  ungroup()
+kable(ej3)
+```
+
+
+
+4) Transformar las puntuaciones de modo tal que cada candidata tenga para cada juez media 0 y dispersión 1.
+
+Esto permite observar la variación entre los atributos de una misma candidata y un mismo juez
+
+```{r}
+ej4<-df %>%
+  group_by(juez,candidatos) %>%
+  mutate(est=(puntaje-mean(puntaje))/sd(puntaje))%>%
+  ungroup()
+kable(ej4)
+```
+
+
+
+5) Grafique los perfiles multivariados de cada una de las candidatas para ambas transformaciones.
+
+```{r}
+ej5<-ggplot(ej3, aes(x=juez, y=est, group=candidatos, color=candidatos))+
+  geom_point(size=5)+
+  geom_line()+
+  facet_grid(.~atributo)
+
+print(ej5)
+```
+
+
+En el atributo coordinación, ambos jueces establecen a Carla como la mejor y Alejandra como la más floja
+
+
+```{r}
+ej5b<-ggplot(ej3, aes(x=atributo, y=est, group=candidatos, color=candidatos))+
+  geom_point(size=5)+
+  geom_line()+
+  facet_grid(.~juez)
+
+print(ej5b)
+```
+
+
+
+```{r}
+ej6<-ggplot(ej4, aes(x=juez, y=est, group=atributo, color=atributo))+
+  geom_line()+
+  geom_point(size=5)+
+  facet_grid(.~candidatos)
+
+print(ej6)
+```
+
+
+
