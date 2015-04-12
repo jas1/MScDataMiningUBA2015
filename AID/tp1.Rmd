@@ -1,8 +1,4 @@
-Setear directorio de trabajo:
 
-```{r}
-setwd("C:/Github/MScDataMiningUBA2015/AID")
-```
 
 
 Cargar librerías necesarias:
