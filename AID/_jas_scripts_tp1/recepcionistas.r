@@ -1,5 +1,6 @@
 # ESTE SCRIPT ESTA EN DESARROLLO , TODAVIA NO ESTA TERMINADO Y PUEDE TENER ERRORES
 
+
 # depende del WS , tiene que tener el archivo de recepcionistas en el WS
 # devuelve el data table de recepcionistas
 iniciarRecepcionistas <- function(workDir){
@@ -14,14 +15,13 @@ iniciarRecepcionistas <- function(workDir){
     # para inistalar libs, descomentar si no estan instaladas
     #install.packages("ggplot2")
     #install.packages("xlsx")
-    
-    
+
     #install.packages("tidyr")
     #install.packages("dplyr")
     #install.packages("knitr")
-    require(tidyr)
-    require(dplyr)
-    require(knitr)
+    library(tidyr)
+    library(dplyr)
+    library(knitr)
     
     # levanta librerias
     library(xlsx)
@@ -108,7 +108,7 @@ promedioTotalPorAspirante <- function(muestra){
 #c- Transformar las puntuaciones observadas de modo tal que cada una seis variables tenga media 0 y dispersión 1. 
 #   Cuál sería el objetivo de esta transformación?
 # el objetivo de la transformacion seria normalizar la muestra, lo que implica llevar a la misma escala a todos , 
-# eliminando desvios de percepcin de escala
+# eliminando desvios de percepcin de escala; tambien normalizar ayuda a tener mas herramientas estadisticas aplicables.
 # promedioTotalPorAspirante(normalizarDatos(aspirantesTranspuestas(muestra)))
 # para comparar con el sin normalizar
 # promedioTotalPorAspirante(aspirantesTranspuestas(muestra))
@@ -127,6 +127,22 @@ transformarAcandidatasNumerico <- function(muestra){
     tmp <- data.frame(muestra)
     tmp  
 }
+
+
+normalizarPuntuacioenesSinFiltros <- function(muestra){
+    #transformacion nombres filas
+    row.names (muestra) <- muestra[,1]
+    muestra <-  muestra[,-1]
+
+    tmp <- data.frame(muestra)
+    
+    # normalizar los datos
+    norm <- normalizarDatos(tmp  )
+    
+    # mostrar solo promedios
+    norm
+}
+
 
 normalizarPuntuacioenesPorJuez <- function(muestra){
     #transformacion nombres filas
@@ -156,13 +172,72 @@ perfilesSegunD <- function(m){
     muestra <- normalizarPuntuacioenesPorJuez(m)
     muestra$nombres <- row.names (muestra)
 
-    muestra$nombres <- factor(muestra$nombres)
-    # armar para que quede colnames / valor
-    #muestra["nombre",]  <- colnames(muestra)
-    # Lidiando cn gg plot y mi versiond e R ( me hace reventar el R studio :S)
-   # ggplot(muestra, aes(x=nombre, y=total)) + geom_line() + expand_limits(y=0)    
-   #ggplot(muestra, aes(x=nombres, y=promJuez1,group=1)) + geom_line() + geom_point()
-   #muestra
+    #acomodar la muestra para que encaje con gg plot
+    
+    #me tiene que quedar
+    #col1) tipo juez
+    #col2) aspirante
+    #col3) valor
+    muestra <- muestra %>% gather(juez, puntajes, -nombres) 
+    # normalizar nombres columnas
+    
+
+    plot <- ggplot(muestra, aes(x=nombres, y=puntajes, group=juez,colour=juez)) + geom_line() + geom_point(size=4) 
+    plot
 }
 
 # e2. perfiles segun transformacion C
+# se puede especificar por juez o atributo.
+# si  juez por default es sin filtro, validos: 1 y 2 
+# si es attr hay que explicitar la llamada al param filtroAttr, validos: pres,cord,idiom, por default sin filtro
+# si vienen fuera de rango, devuelve como sin filtro.
+perfilesSegunC <- function(m, filtroJuez = 0,filtroAttr = ""){
+    #acomodar la muestra para que encaje con gg plot
+    
+    #me tiene que quedar
+    #col1) tipo juez
+    #col2) aspirante
+    #col3) valor
+    
+    # normalizar nombres columnas
+    muestra <- muestra %>% 
+                    rename(cord.juez1=cord.juez.1, cord.juez2=cord.juez.2) %>% 
+                    gather(atributo, puntajes, -candidatos) 
+    # %>% separate(atributo, into = c("atributo", "juez"), sep = "\\.")
+    
+    muestra$norm <- normalizarDatos(muestra$puntajes)
+    # hago el merge de columnas
+   # muestra <- muestra %>% gather(atributo, puntajes, -nombres) 
+    
+    # separo los atributos del juez por el separador punto ".", escapeado con \\
+   # muestra <- muestra %>% separate(atributo, into = c("atributo", "juez"), sep = "\\.")
+
+   ploteable <- muestra
+   
+   # filtro par abuscar por juez especificamente., si no se determina o pone 0 sale todo
+   if(filtroJuez==1){
+       ploteable <- ploteable[grep("juez1", muestra$atributo),]
+   }else{
+       if(filtroJuez==2){
+           ploteable <- ploteable[grep("juez2", muestra$atributo),]
+       }
+   } 
+   
+   # filtro par abuscar para comparar vars de jueces explicitar filtroAttr en la llamada
+   # perfilesSegunC(muestra,filtroAttr = "pres")
+   if(filtroAttr == "cord"){
+       ploteable <- ploteable[grep("cord", ploteable$atributo),]
+   }else {
+       if(filtroAttr=="pres"){
+           ploteable <- ploteable[grep("pres", ploteable$atributo),]
+       }else{
+           if(filtroAttr=="idiom"){
+               ploteable <- ploteable[grep("idiom", ploteable$atributo),]
+           }
+       }
+   }
+   
+   # al fin salio el ggplot :D !
+    plot <- ggplot(ploteable, aes(x=candidatos, y=norm, group=atributo,colour=atributo)) + geom_line() + geom_point(size=4) 
+    plot
+}
