@@ -1,5 +1,11 @@
 #AID - Trabajo Práctico Nro. I
 
+Cargar directorio de trabajo:
+
+```{r}
+setwd("C:/Github/MScDataMiningUBA2015/AID")
+```
+
 Cargar librerías necesarias:
 
 ```{r warning=FALSE, message=FALSE}
@@ -142,6 +148,60 @@ En los únicos casos que se observa una disidencia notable entre ambos jueces en 
 
 El juez 1 tiene a ser más exigente en idiomas que en coordinación, y el juez 2 suele puntuar mejor en presencia que en los otros atributos.
 
+
+internet<-read.xlsx("Internet2013.xlsx",1)
+
+
+
+##Ejercicio 2: Conjunto de datos
+
+###a) Clasificar las variables de la base.
+
+
+internet2<- internet %>% transform(ID=as.factor(ID),
+  Nacionalidad=as.factor(Nacionalidad),
+  Sexo<-as.factor(Sexo),
+  Sitio<-as.factor(Sitio)
+  )
+
+###b) Construir la tabla de frecuencia para la variable sexo. Hay algún valor que llame la atención? ¿Qué tipo de error considera que es?
+
+table(internet$Sexo)
+
+Hay un valor igual a 0, puede ser faltante o no contesta.
+
+levels(internet$Sexo)<-c("desconocido","masculino","femenino")
+
+Ver funcion.
+
+###c) Ordenar los datos por la variable Edad. Encontró algún valor extraño?. Qué tipo de error puede ser?
+
+internet2<-internet2 %>% arrange(Edad)
+
+order(unique(internet2$))
+
+unique(internet2$Edad)
+
+###d) Construir la tabla de frecuencias de la variable Sitio. Encuentra algún valor que le llame la atención. ¿Qué tipo de error puede ser?
+
+table(internet2$Sitio)
+
+28,error de tipeo
+
+###d) Proceda de forma similar para las variables Temperatura, Autos y Cigarrillos.
+
+table(internet2$Temperatura)
+
+table(internet2$Autos)
+
+table(internet2$Cigarrillos)
+
+###d) Proceda de forma similar para las variables Temperatura, Autos y Cigarrillos.
+
+internet2<-internet2 %>% mutate(interval=cut(Cigarrillos, breaks=4)) 
+
+unique(internet2$interval)
+unique(internet2$Cigarrillos)
 
 
 
