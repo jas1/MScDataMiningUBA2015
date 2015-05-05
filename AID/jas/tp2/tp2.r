@@ -149,7 +149,6 @@ levantaGorriones <- function(){
     # aprovecho para emprolijar Valores
     gorriones$vivo[gorriones$vivo == 1] <- TRUE # es 1
     gorriones$vivo[gorriones$vivo == -1] <- FALSE # es 0 
-    gorriones$vivo <- gorriones$vivo == 1
     gorriones$vivo <- as.factor(gorriones$vivo)
     
     gorriones
