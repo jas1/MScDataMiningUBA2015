@@ -49,4 +49,5 @@ chalets[chalets$pca1==max(chalets$pca1),]
 #3
 
 
+
 #factominer
